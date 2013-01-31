@@ -64,8 +64,9 @@ describe 'TimelineFu' do
     company = Company.new(owner: james, name: 'A great company!')
     CompanyEvent.should_receive(:create!).with(actor: james, subject: company, event_type: 'company_created').and_return(event)
     company.save
-    company.last_timeline_event.should eq event
+    company.last_timeline_events.include?(event).should be_true
   end
+
 
   it 'should support specifying multiple event classes' do
     CompanyEvent.should_receive(:create!)

@@ -2,7 +2,7 @@ module TimelineFu
   module Fires
     def self.included(klass)
       klass.send(:extend, ClassMethods)
-      attr_accessor :last_timeline_event
+      attr_accessor :last_timeline_events
     end
 
     module ClassMethods
@@ -47,7 +47,8 @@ module TimelineFu
 
     def fire_event(class_name, callback, create_options)
       event = class_name.classify.constantize.create!(create_options)
-      self.last_timeline_event = event
+      self.last_timeline_events ||= []
+      self.last_timeline_events << event
 
       if callback && self.respond_to?(callback)
         if [1,-1].include?(method(callback).arity)
