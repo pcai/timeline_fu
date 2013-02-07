@@ -1,8 +1,13 @@
 module TimelineFu
   module Fires
     def self.included(klass)
-      klass.send(:extend, ClassMethods)
-      attr_accessor :last_timeline_events
+      klass.class_eval do
+        extend ClassMethods
+
+        attr_accessor :last_timeline_events
+
+        after_initialize -> { self.last_timeline_events ||= TimelineEventsArray.new }
+      end
     end
 
     module ClassMethods
@@ -41,13 +46,35 @@ module TimelineFu
         end
       end
 
+
+    end
+
+    class TimelineEventsArray
+      def initialize
+        @timeline_events = []
+      end
+
+      def <<(timeline_event)
+        @timeline_events << timeline_event
+      end
+
+      def of_type(type)
+        @timeline_events.select{ |timeline_event| timeline_event.event_type == type }
+      end
+
+      def last_of_type(type)
+        of_type(type).last
+      end
+
+      def include?(obj)
+        @timeline_events.include?(obj)
+      end
     end
 
     private
 
     def fire_event(class_name, callback, create_options)
       event = class_name.classify.constantize.create!(create_options)
-      self.last_timeline_events ||= []
       self.last_timeline_events << event
 
       if callback && self.respond_to?(callback)
