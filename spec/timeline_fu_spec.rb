@@ -59,6 +59,29 @@ describe 'TimelineFu' do
     company.save
   end
 
+  it 'should set last_timeline_event for object' do
+    event = CompanyEvent.new
+    company = Company.new(owner: james, name: 'A great company!')
+    CompanyEvent.should_receive(:create!).with(actor: james, subject: company, event_type: 'company_created').and_return(event)
+    company.save
+    company.last_timeline_events.include?(event).should be_true
+  end
+
+  it 'should return last object of certain type' do
+    arr = TimelineFu::Fires::TimelineEventsArray.new
+    obj = OpenStruct.new(event_type: 'cool_type')
+    arr << obj
+    arr.last_of_type('cool_type').should eq(obj)
+  end
+
+  it 'should return objects of certain type' do
+    arr = TimelineFu::Fires::TimelineEventsArray.new
+    obj = OpenStruct.new(event_type: 'cool_type')
+    arr << obj
+    arr.of_type('cool_type').include?(obj).should be true
+  end
+
+
   it 'should support specifying multiple event classes' do
     CompanyEvent.should_receive(:create!)
     company = Company.create(owner: james, name: 'A great company!')
